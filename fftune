@@ -1,0 +1,47 @@
+#!/bin/bash
+presets="cello erhu fiddle guitar guitar_bass tro_sau_thom ukulele ukulele_baritone ukulele_bass ukulele_contrabass viola violin"
+
+# Note that strings are in order from first to last, not left to right.
+cello="220.00 146.83 98.00 65.41" # A3 D3 G2 C2
+erhu="440.00 293.66" # A4 D4
+fiddle="659.25 440.00 293.66 196.00" # E5 A4 D4 G3
+guitar="329.63 246.94 196.00 146.83 110.00 82.41" # E4 B3 G3 D3 A2 E2
+guitar_bass="98.00 73.42 55.00 41.20" # G2 D2 A1 E1
+tro_sau_thom="440.00 293.66" # A4 D4
+ukulele="440.00 329.63 261.63 392.00" # A4 E4 C4 G4
+ukulele_baritone="329.63 246.94 196.00 146.83" # E4 B3 G3 D3
+ukulele_bass="196.00 146.83 110 82.41" # G3 D3 A2 E2
+ukulele_contrabass="98.00 73.42 55.00 41.20" # G2 D2 A1 E1
+viola="440.00 293.66 196.00 130.81" # A4 D4 G3 C3
+violin="659.25 440.00 293.66 196.00" # E5 A4 D4 G3
+
+if [[ ! -v 1 || -z 1 ]]
+then
+	echo "Specify notes in hertz or a preset:"
+	for preset in $presets
+	do
+		echo "${preset}: ${!preset}"
+	done
+	exit 1
+fi
+
+group="notes"
+notes=$@
+for preset in $presets
+do
+	if [[ $1 == $preset ]]
+	then
+		group=$1
+		notes=${!1}
+	fi
+done
+
+echo "Playing ${group}: ${notes}"
+for note in $notes
+do
+	echo -n $note
+	ffplay -f lavfi -i "sine=frequency=${note}" -showmode video &> /dev/null &
+	pid=$!
+	read
+	kill $pid
+done
